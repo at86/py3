@@ -16,7 +16,7 @@ d = {
         # 'fieldList': 23,
         # =====================
         'table': 'note_file',
-        'type': 'getList',
+        'getOne': False,
         'fieldList': ['id', 'name'],
 
         # 'whereList': [{'f': 'id', 'v': 26}],
@@ -27,7 +27,7 @@ d = {
     },
     'a1': {
         'table': 'note_file',
-        'type': 'getOne',
+        'getOne': True,
         'fieldList': ['id', 'uid as ddd', 'name'],
         # 'orderList': [1, 3],
         'orderList': [{'f': 'id', 'v': 'desc'}],

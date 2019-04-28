@@ -78,7 +78,7 @@ async def getData(request, requrl):
     """atdo 文档新增 (totest)"""
     rules = {
         "table": [Required, InstanceOf(str)],
-        "type": [Required, In(['getOne', 'getList'])],
+        "getOne": [Default(True), In([False, True])],
         "fieldList": [Default(['*']), InstanceOf(list)],
         "whereList": [Default([]), InstanceOf(list)],
         "orderList": [Default([]), InstanceOf(list)],
@@ -126,7 +126,7 @@ async def getData(request, requrl):
                 orderList=v['orderList'],
                 offset=v['offset'],
                 limit=v['limit'],
-                getOne=v['type'] == 'getOne',
+                getOne=v['getOne'],
             )
             d[k] = {
                 'r': 0,
