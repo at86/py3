@@ -22,15 +22,17 @@ d = {
         # 'whereList': [{'f': 'id', 'v': 26}],
         # 'whereList': [{'f': 'id', 'v': 26},{'ff': 'name', 'op': 'like', 'v': '%js%'},[{'f': 'id', 'v': 26},{'f': 'name', 'v': '%js%','str':'23'}]],
         'orderList': [{'f': 'id', 'v': 'desc'}],
-        'offset': 3,
+        'offset': 0,
         'limit': 3,
     },
     'a1': {
         'table': 'note_file',
         'type': 'getOne',
-        'fieldList': ['id', 'uid as ddd'],
+        'fieldList': ['id', 'uid as ddd', 'name'],
         # 'orderList': [1, 3],
         'orderList': [{'f': 'id', 'v': 'desc'}],
+        # 'offset': 0,
+        # 'limit': 1,
     },
 }
 response = requests.post(url, data=wat.json(d), headers=headers)

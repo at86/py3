@@ -23,7 +23,7 @@ import asyncio
 
 from validator import Default, Required, Not, Truthy, \
     Blank, Range, Equals, In, GreaterThan, validate, InstanceOf, \
-    whereValid,orderValid
+    whereValid, orderValid
 
 # import compileall
 # compileall.compile_dir(r'C:\python3\Lib\asyncio')
@@ -60,58 +60,6 @@ app.error_handler.add(Exception, server_error_handler)
 # app.error_handler = CustomErrorHandler()
 # endregion
 
-# region test code
-@app.route('/mysql')
-async def index(request):
-    sql = 'select sleep(5)'
-    print(time.time())
-    return json(await db.query(sql), ensure_ascii=False)
-
-@app.route("/sleep")
-async def test(request):
-    lst = [time.time()]
-    # time.sleep(3) #同步
-    await asyncio.sleep(2)  # 异步
-    lst.append(time.time())
-    return json(lst, ensure_ascii=False)
-
-
-@app.route("/")
-async def test(request):
-    return text('Hello World!')
-    # return json({"hello": "world"})
-
-@app.route("/favicon.ico")
-async def test(request):
-    return text('')
-
-@app.route("/i.html")
-async def test(request):
-    return await file("./i.html")
-
-@app.route("/raw")
-async def test(request):
-    return raw(b"it is raw data")
-
-async def get_data():
-    conn = sqlite3.connect('./cs_sqlite.db')
-    query_sql = 'select * from stocks'
-    ##进行查询
-    tem = []
-    # query = conn.execute(query_sql  % id)
-    query = conn.execute(query_sql)
-    for i in query:
-        tem.append(i)
-        break
-    conn.close()
-    return tem
-
-@app.route("/json")
-async def test(request):
-    d = await get_data()
-    return json(d, ensure_ascii=False)
-# endregion
-
 # region process's api
 
 def rtnJson(d, r=0, tip='执行成功'):
@@ -134,8 +82,8 @@ async def getData(request, requrl):
         "fieldList": [Default(['*']), InstanceOf(list)],
         "whereList": [Default([]), InstanceOf(list)],
         "orderList": [Default([]), InstanceOf(list)],
-        "offset": [Default(0), InstanceOf(int)],
-        "limit": [Default(0), InstanceOf(int)],
+        "offset": [Default(0), InstanceOf(int), GreaterThan(0, True)],
+        "limit": [Default(0), InstanceOf(int), GreaterThan(0, True)],
     }
     d = request.json
 
@@ -178,7 +126,7 @@ async def getData(request, requrl):
                 orderList=v['orderList'],
                 offset=v['offset'],
                 limit=v['limit'],
-                one=v['type'] == 'getOne',
+                getOne=v['type'] == 'getOne',
             )
             d[k] = {
                 'r': 0,
@@ -188,6 +136,13 @@ async def getData(request, requrl):
     else:
         return rtnJson({'data': errData, 'requrl': requrl}, 1, '校验出错')
 
+@app.route('/ajaxAt/process/nodeEditDo', methods=["POST"])
+async def ajaxAt_process_nodeEditDo(request):
+    """atdo 文档节点更新"""
+    d = toDict(request.form)
+    d['uptime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    await db.table_update('note_node', d, [{'k': 'id', 'v': 26}])  # 26
+    return rtnJson({'id': 26})
 
 @app.route('/ajaxAt/process/nodeAddDo', methods=["POST"])
 async def ajaxAt_process_nodeAddDo(request):
@@ -206,14 +161,6 @@ async def ajaxAt_process_nodeAddDo(request):
         raise wat.myException(vd.errors, -1)
     id = await db.table_insert('note_node', d)
     return rtnJson({'id': id})
-
-@app.route('/ajaxAt/process/nodeEditDo', methods=["POST"])
-async def ajaxAt_process_nodeEditDo(request):
-    """atdo 文档节点更新"""
-    d = toDict(request.form)
-    d['uptime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    await db.table_update('note_node', d, [{'k': 'id', 'v': 26}])  # 26
-    return rtnJson({'id': 26})
 
 @app.route('/ajaxAt/process/fileAddDo', methods=["POST"])
 async def ajaxAt_process_fileAddDo(request):
@@ -272,6 +219,58 @@ async def ajaxAt_process_fileUpSxDo(request):
 
 
 
+# endregion
+
+# region test code
+@app.route('/mysql')
+async def index(request):
+    sql = 'select sleep(5)'
+    print(time.time())
+    return json(await db.query(sql), ensure_ascii=False)
+
+@app.route("/sleep")
+async def test(request):
+    lst = [time.time()]
+    # time.sleep(3) #同步
+    await asyncio.sleep(2)  # 异步
+    lst.append(time.time())
+    return json(lst, ensure_ascii=False)
+
+
+@app.route("/")
+async def test(request):
+    return text('Hello World!')
+    # return json({"hello": "world"})
+
+@app.route("/favicon.ico")
+async def test(request):
+    return text('')
+
+@app.route("/i.html")
+async def test(request):
+    return await file("./i.html")
+
+@app.route("/raw")
+async def test(request):
+    return raw(b"it is raw data")
+
+async def get_data():
+    conn = sqlite3.connect('./cs_sqlite.db')
+    query_sql = 'select * from stocks'
+    ##进行查询
+    tem = []
+    # query = conn.execute(query_sql  % id)
+    query = conn.execute(query_sql)
+    for i in query:
+        tem.append(i)
+        break
+    conn.close()
+    return tem
+
+@app.route("/json")
+async def test(request):
+    d = await get_data()
+    return json(d, ensure_ascii=False)
 # endregion
 
 if __name__ == "__main__":
