@@ -1,0 +1,23 @@
+.idea
+
+__pycache__/
+
+# C extensions
+*.so
+*.pyd
+
+pyd/build/
+pyd/pages/
+
+
+*.log
+*.db
+
+# Environments
+.env
+
+*.pyc
+*.pyo
+
+
+

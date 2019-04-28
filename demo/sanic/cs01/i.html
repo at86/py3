@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+<div>
+  <fieldset>
+    <legend>test</legend>
+    <button class="test">mysql</button>
+    <button class="test">sleep</button>
+  </fieldset>
+  <fieldset>
+    <legend>real</legend>
+    <button id="ajaxAt_process_fileEditDo">文档更新</button>
+    <button id="ajaxAt_process_fileGetDo">文档获取</button>
+    <button id="ajaxAt_process_fileListDo">文档列表</button>
+  </fieldset>
+  <fieldset>
+    <legend>lab</legend>
+    <button id="all">all</button>
+  </fieldset>
+</div>
+</body>
+<script>
+  $("button.test").click(function () {
+    var t = $(this).text();
+    $.ajax({
+      type: "get",
+      url: "/" + t,
+      cache: false,
+      success: function (data, status) {
+        console.log("Data: ", data, ", Status: ", status);
+      }
+    });
+  });
+  $("#ajaxAt_process_fileEditDo").click(function () {
+    var t = $(this).attr('id').replace(/_/g, "/")
+    console.log(t)
+    d = {}
+    //d['uid'] = 1;
+    //d['addtime'] = time();
+    d['name'] = 'name';
+    d['nodes'] = '';
+    d['content'] = '';
+    d['type'] = 3;//1:ueditor rich text; 3:text; 4:codemirror
+    d['mode'] = '';
+    d['mks'] = '';
+
+    $.ajax({
+      type: "post",
+      data: d,
+      url: "/" + t,
+      cache: false,
+      success: function (data, status) {
+        console.log("Data: ", data, ", Status: ", status);
+      }
+    });
+  });
+  $("#ajaxAt_process_fileGetDo").click(function () {
+    var t = $(this).attr('id').replace(/_/g, "/")
+    console.log(t)
+    d = {}
+    d['name'] = 'name';
+
+    $.ajax({
+      type: "get",
+      data: d,
+      url: "/" + t,
+      cache: false,
+      success: function (data, status) {
+        console.log("Data: ", data, ", Status: ", status);
+      }
+    });
+  });
+  $("#ajaxAt_process_fileListDo").click(function () {
+    var t = $(this).attr('id').replace(/_/g, "/")
+    console.log(t)
+    d = {}
+    d['name'] = 'name';
+
+    $.ajax({
+      type: "get",
+      data: d,
+      url: "/" + t,
+      cache: false,
+      success: function (data, status) {
+        console.log("Data: ", data, ", Status: ", status);
+      }
+    });
+  });
+  $("#all").click(function () {
+    d =
+      {
+        'k1': {
+          'type': 'getOne',
+          'table': 'node_file',
+          'fields': ['id', 'uid as ddd', '*'],
+          'where': [{'k': 'id', 'v': 26}]
+        },
+        'a1': {
+          'type': 'getOne',
+          'table': 'node_file',
+          'fields': ['id', 'uid as ddd', '*'],
+          'where': [{'k': 'id', 'v': 26}]
+        },
+      }
+
+
+    $.ajax({
+      type: "post",
+      dataType: 'json',
+      data: JSON.stringify(d),
+      contentType: "application/json",
+      url: "/a_b_c",
+      cache: false,
+      success: function (data, status) {
+        console.log("Data: ", data, ", Status: ", status);
+      }
+    });
+  });
+</script>
+</html>
