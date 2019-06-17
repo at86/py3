@@ -1,9 +1,10 @@
 # coding:utf-8
 
 import wx
-import wat
 import os
 import sys
+# sys.path.append("/Volumes/py/tool")
+import wat
 import demjson
 print(os.path.join(os.path.dirname(sys.argv[0]), "lib"))
 sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "lib"))

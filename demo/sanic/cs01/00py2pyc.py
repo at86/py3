@@ -90,7 +90,8 @@ class CppyOptParser:
             self._parser.error('src[ %s ] doesn\'t exist as a directory' % (self._src,))
         # if '.' in dest_abs and dest_abs.rfind('.') != 1:
         #     self._parser.error("dest[ %s ] is not a directory" % (self._dest,))
-        if dest_abs.startswith(src_abs):
+
+        if (dest_abs + os.pathsep).startswith(src_abs + os.pathsep):
             self._parser.error("dest[ %s ] is in src[ %s ]" % (self._src, self._dest))
 
     @staticmethod
@@ -371,7 +372,10 @@ class CompileController:
             self._error(str(e))
 
 # atdo 直接
-sys.argv = ['pb2pyc.py', '-r', '-d', r'D:/wat/py3/demo/sanic/cs01/build/exe.win32-3.7/lib/', r'C:/python3/Lib/asyncio']
+# sys.argv = ['py2pyc.py', '-r', '-d', r'D:/wat/py3/demo/sanic/cs01/build/exe.win32-3.7/lib/', r'C:/python3/Lib/asyncio']
+# sys.argv = ['py2pyc.py', '-a', '-c', '-d', r'D:\hack\pythonEmbed\LibPyc', r'D:\hack\pythonEmbed\Lib\wx']
+
+sys.argv = ['py2pyc.py', '-a', '-c', '-d', r'D:\hack\pythonEmbed\LibPyc', r'C:\python3\Lib\site-packages\websockets']
 
 if __name__ == "__main__":
     CompileController()

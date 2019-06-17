@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
-  <script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>
+<!--  <script src="https://cdn.bootcss.com/jquery/3.4.0/jquery.min.js"></script>-->
+  <script src="./static/jquery.min.js"></script>
 </head>
 <body>
 <div>
@@ -121,5 +122,77 @@
       }
     });
   });
+
+  for(var i=0;i<10;i++){
+    wsit()
+  }
+
+  function wsit() {
+    var ws = new WebSocket("ws://127.0.0.1:8000/wsreq");
+
+    ws.onopen = function(evt) {
+      console.log("Connection open ...");
+      ws.send("Hello WebSockets!");
+    };
+
+    ws.onmessage = function(evt) {
+      console.log( "Received Message: " + evt.data.length);
+      ws.close();
+
+      //if(typeof evt.data === String) {
+      //  console.log("Received data string");
+      //}
+      //
+      //if(evt.data instanceof ArrayBuffer){
+      //  var buffer = event.data;
+      //  console.log("Received arraybuffer");
+      //}
+    };
+
+    ws.onclose = function(evt) {
+      console.log("Connection closed.");
+    };
+
+    /*
+
+// 收到的是 blob 数据
+ws.binaryType = "blob";
+ws.onmessage = function(e) {
+  console.log(e.data.size);
+};
+
+// 收到的是 ArrayBuffer 数据
+ws.binaryType = "arraybuffer";
+ws.onmessage = function(e) {
+  console.log(e.data.byteLength);
+};
+
+实例对象的send()方法用于向服务器发送数据。
+
+发送文本的例子。
+
+
+ws.send('your message');
+发送 Blob 对象的例子。
+
+
+var file = document
+  .querySelector('input[type="file"]')
+  .files[0];
+ws.send(file);
+发送 ArrayBuffer 对象的例子。
+
+
+// Sending canvas ImageData as ArrayBuffer
+var img = canvas_context.getImageData(0, 0, 400, 320);
+var binary = new Uint8Array(img.data.length);
+for (var i = 0; i < img.data.length; i++) {
+  binary[i] = img.data[i];
+}
+ws.send(binary.buffer);
+
+     */
+
+  }
 </script>
 </html>

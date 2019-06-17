@@ -8,6 +8,11 @@ __pycache__/
 
 pyd/build/
 pyd/pages/
+*.o
+*.obj
+*.c
+*.exp
+*.lib
 
 
 *.log

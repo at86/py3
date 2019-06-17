@@ -10,7 +10,7 @@ app = Flask(__name__, template_folder='./',static_folder="",static_url_path="")
 
 @app.route('/')
 def hello():
-    return 'Hello, World!3333'
+    return 'Hello, World!333344'
 
     # message=db.get_data()
     # # for i in  message:
@@ -45,7 +45,7 @@ def d222():
     return render_template('d.html')
 
 if __name__ == '__main__':
-    # app.run(debug=True)
+    app.run(debug=True)
     handler = logging.FileHandler('flask.log')
     app.logger.addHandler(handler)
     app.run()

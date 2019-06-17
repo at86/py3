@@ -6,7 +6,7 @@ from validator import Default, Required, \
 
 headers = {'Content-Type': 'application/json'}
 
-url = 'http://127.0.0.1:8000/sss'
+url = 'http://127.0.0.1:8000/getdata/sss'
 d = {
     # 'k0': 3,
     'k1': {

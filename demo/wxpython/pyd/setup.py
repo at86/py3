@@ -3,6 +3,9 @@
 拷贝到目标/pages/目录
 """
 import sys
+# sys.path.append("/Volumes/py/tool")
+
+# import setuptools  # important
 from distutils.core import setup
 
 from Cython.Build import cythonize
@@ -109,9 +112,10 @@ def fileRecPyd(dirname, pyfile):
             print('dir: ', dirnew)
             fileRecPyd(dirnew, pyfile)
         else:
-            if os.path.splitext(dirnew)[1] == '.pyd':
+            fend = os.path.splitext(dirnew)[1]
+            if fend == '.pyd' or fend == '.so':
                 pyfile.append(dirnew)
-            print('file: ', dirnew)
+            print('file: ', dirnew, fend)
 
 pydFiles = []
 for dir1 in builds:
@@ -124,8 +128,9 @@ print(pydFiles)
 for f in pydFiles:
     dst = '../' + f
     f2 = os.path.splitext(dst)[0]
+    fend = os.path.splitext(dst)[1]
     f2 = os.path.splitext(f2)[0]
-    dstPyd = f2 + '.pyd'
+    dstPyd = f2 + fend  # mac .so  ; win .pyd;
     wat.d(dstPyd)
     shutil.copyfile(f, dstPyd)
     # # atdo pyc exist then copy pyd replace the pyc

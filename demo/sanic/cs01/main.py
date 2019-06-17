@@ -1,7 +1,8 @@
 import os
 import sys
+import demjson
 
-sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "lib"))
+# sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "lib"))
 
 import wat
 
@@ -30,6 +31,13 @@ from validator import Default, Required, Not, Truthy, \
 
 from sanicdb import SanicDB
 
+# atdo 190522
+# from websockets import WebSocketCommonProtocol
+# from websockets import State
+from sanic.websocket import ConnectionClosed
+
+# 上面的 ConnectionClosed 实际是 from websockets.exceptions import ConnectionClosed
+
 # app = Sanic()
 app = Sanic('test', log_config=None)
 # app.config.KEEP_ALIVE = False
@@ -43,9 +51,14 @@ async def server_error_handler(request, exception):
     :param myException exception:
     :return:
     """
+    wat.d('3333  server_error_handler')
     if not getattr(sys, 'frozen', False):
-        traceback.print_exc()
-    return json({'tip': exception.msg, 'r': exception.code})
+        traceback.print_exc(limit=1, )
+
+    if hasattr(exception, 'msg') and hasattr(exception, 'code'):
+        return json({'tip': exception.msg, 'r': exception.code})
+    else:
+        return json({'tip': str(exception), 'r': -1})
 app.error_handler.add(Exception, server_error_handler)
 
 # atdo ok 2
@@ -72,8 +85,29 @@ def toDict(form):
         d[k] = form.get(k)
     return d
 
+# atdo ws
+@app.websocket('/wsreq')
+async def feed(request, ws):
+    try:
+        while True:
+            # if ws.state == WebSocketCommonProtocol.State.CLOSING:
+            # print(ws.open,ws.state)
+            # if not ws.open:
+            # 偶尔不是关闭
+            # print(ws.state)
+            # if ws.state == State.CLOSING:
+            #     return
+            data = await ws.recv()
+            print('recv: ' + data)
+            print('send back: ' + data)
+            await ws.send(data*1000)
+    except ConnectionClosed as ex:
+        print('closed.........')
+    except Exception as e:
+        print('exception: ' + e.__str__())
 
-@app.route('/<requrl>', methods=["POST"])
+# atdo requrl is variable
+@app.route('/getdata/<requrl>', methods=["POST"])
 async def getData(request, requrl):
     """atdo 文档新增 (totest)"""
     rules = {
@@ -136,18 +170,11 @@ async def getData(request, requrl):
     else:
         return rtnJson({'data': errData, 'requrl': requrl}, 1, '校验出错')
 
-@app.route('/ajaxAt/process/nodeEditDo', methods=["POST"])
-async def ajaxAt_process_nodeEditDo(request):
-    """atdo 文档节点更新"""
-    d = toDict(request.form)
-    d['uptime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    await db.table_update('note_node', d, [{'k': 'id', 'v': 26}])  # 26
-    return rtnJson({'id': 26})
-
+# region 节点：新增；更新；
 @app.route('/ajaxAt/process/nodeAddDo', methods=["POST"])
 async def ajaxAt_process_nodeAddDo(request):
     """atdo 文档节点新增 (totest)"""
-    d = toDict(request.form)
+    d = request.json
     rules = {
         "addtime": [Default(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))],
         "sx": [Default(999)],
@@ -159,69 +186,73 @@ async def ajaxAt_process_nodeAddDo(request):
     vd = validate(rules, d)
     if not vd.valid:
         raise wat.myException(vd.errors, -1)
-    id = await db.table_insert('note_node', d)
-    return rtnJson({'id': id})
+    fid = await db.table_insert('note_node', d)
+    return rtnJson({'id': fid})
 
+@app.route('/ajaxAt/process/nodeEditDo', methods=["POST"])
+async def ajaxAt_process_nodeEditDo(request):
+    """atdo 文档节点更新"""
+    d = request.json
+    d['uptime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    await db.table_update('note_node', d, [{'f': 'id', 'v': d['id']}])
+    return rtnJson({'id': d['id']})
+# endregion
+
+# region 文件：新增；更新；获取；列表；排序；
 @app.route('/ajaxAt/process/fileAddDo', methods=["POST"])
 async def ajaxAt_process_fileAddDo(request):
-    """atdo 文档新增 (totest)"""
     d = toDict(request.form)
     d['addtime'] = int(time.time())
     d['uptime'] = int(time.time())
-    id = await db.table_insert('note_file', d)
-    return rtnJson({'id': id})
+    fid = await db.table_insert('note_file', d)
+    return rtnJson({'id': fid})
 
 @app.route('/ajaxAt/process/fileEditDo', methods=["POST"])
 async def ajaxAt_process_fileEditDo(request):
-    """atdo 文档更新"""
-    d = toDict(request.form)
+    d = request.json
     d['uptime'] = int(time.time())
-    await db.table_update('note_file', d, 'id', 26)  # 26
+    await db.table_update('note_file', d, [{'f': 'id', 'v': d['id']}])  # 26
     return rtnJson({'id': 26})
 
-@app.route('/ajaxAt/process/fileGetDo', methods=["GET"])
+@app.route('/ajaxAt/process/fileGetDo', methods=["POST"])
 async def ajaxAt_process_fileGetDo(request):
-    """atdo 文档详情"""
-    r = await db.get('select * from note_file where id=%s', 26)  # 26
+    d = request.json
+    r = await db.get('select * from note_file where id=%s', d['id'])  # 26
     return rtnJson(r)
 
-@app.route('/ajaxAt/process/fileListDo', methods=["GET"])
+@app.route('/ajaxAt/process/fileListDo', methods=["POST"])
 async def ajaxAt_process_fileListDo(request):
-    """atdo 文档列表"""
-    d = toDict(request.args)
+    d = request.json
     rules = {
         "limit": [Default(10), Range(1, 1000)],
         "page": [Default(1), GreaterThan(0)],
     }
     vd = validate(rules, d)
     if not vd.valid:
-        # atdo json() is a httpResponse
-        # raise myException(json(vd.errors), -1)
         raise wat.myException(vd.errors, -1)
     fromNum = (d['page'] - 1) * d['limit']
-    rs = await db.query('select id,addtime,uptime,name,type,mode,del from note_file order by del asc, uptime desc limit %s, %s',
-                        fromNum, d['limit'])
-    # wat.d(rs)
-    # r = await db.get('select * from note_file where id=%s', 26)  # 26
+    sql = 'select id,addtime,uptime,name,type,mode,del from note_file order by del asc, uptime desc limit %s, %s'
+    rs = await db.query(sql, fromNum, d['limit'])
     return rtnJson(rs)
 
 @app.route('/ajaxAt/process/fileUpSxDo', methods=["POST"])
 async def ajaxAt_process_fileUpSxDo(request):
-    """atdo 文档列表 (totest)"""
-    d = toDict(request.form)
-    upSql = 'case id'
+    """文档排序"""
+    d = request.json
+    upSql = ['case id']
     for k, v in enumerate(d['sx']):
-        upSql += ' when %s then %s' % (v, k)
-    upSql += ' end'
+        upSql.append('when %s then %s' % (v, k))
+    upSql.append('end')
+    upSql = " ".join(upSql)
     upSql = 'update note_file set sx= %s where id in(%s)' % (upSql, ','.join(d['sx']))
     rs = await db.execute(upSql)
     return rtnJson(rs)
-
-
+# endregion
 
 # endregion
 
 # region test code
+
 @app.route('/mysql')
 async def index(request):
     sql = 'select sleep(5)'
@@ -254,6 +285,7 @@ async def test(request):
 async def test(request):
     return raw(b"it is raw data")
 
+# region sqlite
 async def get_data():
     conn = sqlite3.connect('./cs_sqlite.db')
     query_sql = 'select * from stocks'
@@ -273,8 +305,16 @@ async def test(request):
     return json(d, ensure_ascii=False)
 # endregion
 
-if __name__ == "__main__":
+# endregion
+
+def run():
+    app.static('/static', './static')
     app.run(host="127.0.0.1", port=8000)
+
+if __name__ == "__main__":
+    # app.run(host="127.0.0.1", port=8000)
+    run()
+
     # debug=True, access_log=True,
     # app.run(host="127.0.0.1", port=8000, auto_reload=True)
     # app.run(debug=True)
